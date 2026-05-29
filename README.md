@@ -1,2 +1,0 @@
-# limpiamax
-proyecto laura
