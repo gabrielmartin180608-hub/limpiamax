@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LimpiaMax | Sistema de Inventario</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+</head>
+<body>
+
+<video autoplay muted loop playsinline class="video-fondo">
+  <source src="proyecto.mp4" type="video/mp4">
+</video>
+
+  <header class="navbar">
+    <a class="logo" href="#inicio">LIMPIA<span>MAX</span></a>
+
+    <nav class="nav-links">
+      <a href="#inicio">Inicio</a>
+      <a href="#inventario">Inventario</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
+
+    <div class="navbar-right">
+      <button class="admin-nav-btn" id="abrirModalAdmin">
+        <i class="fa-solid fa-lock"></i>
+        Admin
+      </button>
+      <button class="cart-button" id="abrirCarrito">
+        <i class="fa-solid fa-cart-shopping"></i>
+        <span id="contador">0</span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" id="inicio">
+      <div class="hero-content">
+        <p class="etiqueta">Sistema de gestion de inventario</p>
+        <h1>Control de productos para LimpiaMax</h1>
+        <p class="hero-text">
+          Busca productos por nombre, codigo o categoria. Registra, edita y elimina productos con precios de costo y venta.
+        </p>
+        <div class="hero-actions">
+          <a class="btn primary" href="#inventario">Ver inventario</a>
+          <button class="btn secondary" id="abrirModalAdmin2">Entrar admin</button>
+        </div>
+      </div>
+
+      <div class="hero-panel">
+        <div class="hero-stat">
+          <strong>COD</strong>
+          <span>codigo automatico</span>
+        </div>
+        <div class="hero-stat">
+          <strong>CRUD</strong>
+          <span>agregar editar eliminar</span>
+        </div>
+        <div class="hero-stat">
+          <strong>STOCK</strong>
+          <span>control de inventario</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="beneficios">
+      <article>
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <h3>Busqueda rapida</h3>
+        <p>Encuentra productos por nombre, codigo unico o categoria.</p>
+      </article>
+      <article>
+        <i class="fa-solid fa-boxes-stacked"></i>
+        <h3>Registro completo</h3>
+        <p>Guarda descripcion, stock, precio de costo y precio de venta.</p>
+      </article>
+      <article>
+        <i class="fa-solid fa-chart-line"></i>
+        <h3>Mejor control</h3>
+        <p>Informacion actualizada para tomar mejores decisiones.</p>
+      </article>
+    </section>
+
+    <section class="inventario" id="inventario">
+      <div class="section-heading">
+        <p class="etiqueta">Inventario</p>
+        <h2>Productos registrados</h2>
+      </div>
+
+      <div class="busqueda-box">
+        <input type="text" id="busquedaProducto" placeholder="Buscar por nombre, codigo o categoria" />
+        <button id="limpiarBusqueda">
+          <i class="fa-solid fa-xmark"></i>
+          Limpiar
+        </button>
+      </div>
+
+      <div class="productos" id="productos"></div>
+    </section>
+
+    <section class="pedido-final" id="pedidoFinal">
+      <div class="section-heading">
+        <p class="etiqueta">Pedido</p>
+        <h2>Resumen de compra</h2>
+      </div>
+
+      <div class="pedido-box">
+        <input type="text" id="clienteCompra" placeholder="Nombre del cliente" />
+        <input type="text" id="telefonoCompra" placeholder="Telefono" />
+        <input type="text" id="direccionCompra" placeholder="Direccion de entrega" />
+        <div id="resumenPedido"></div>
+        <button id="confirmarPedido">Confirmar pedido</button>
+        <h3 id="mensajePedido"></h3>
+      </div>
+    </section>
+  </main>
+
+  <!-- ═══════════════════════════════════════════════
+       MODAL DE ADMINISTRADOR
+  ════════════════════════════════════════════════ -->
+  <div class="modal-overlay" id="modalAdmin" role="dialog" aria-modal="true" aria-labelledby="modalAdminTitulo">
+    <div class="modal-container">
+
+      <!-- Botón cerrar modal -->
+      <button class="modal-close" id="cerrarModal" aria-label="Cerrar modal">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <!-- ── PANTALLA DE LOGIN ── -->
+      <div class="modal-login" id="adminLogin">
+        <div class="modal-login-icon">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <h2 id="modalAdminTitulo">Acceso Admin</h2>
+        <p class="modal-login-sub">Ingresa la contrasena para continuar</p>
+
+        <div class="modal-login-form">
+          <div class="input-group">
+            <i class="fa-solid fa-lock input-icon"></i>
+            <input type="password" id="adminPassword" placeholder="Contrasena de admin" />
+            <button type="button" class="toggle-password" id="togglePassword" aria-label="Mostrar contrasena">
+              <i class="fa-solid fa-eye"></i>
+            </button>
+          </div>
+          <button id="loginAdmin" class="btn-login">
+            <i class="fa-solid fa-right-to-bracket"></i>
+            Entrar
+          </button>
+          <p class="admin-msg" id="loginMensaje"></p>
+        </div>
+      </div>
+
+      <!-- ── PANEL ADMIN (visible tras login) ── -->
+      <div class="modal-admin-panel" id="adminPanel">
+
+        <!-- Cabecera del panel -->
+        <div class="modal-panel-header">
+          <div class="modal-panel-title">
+            <i class="fa-solid fa-shield-halved"></i>
+            <h2>Panel Admin</h2>
+          </div>
+          <button class="btn-cerrar-sesion" id="cerrarAdmin">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            Cerrar sesion
+          </button>
+        </div>
+
+        <!-- Tabs de navegación -->
+        <div class="modal-tabs">
+          <button class="tab-btn active" data-tab="productos">
+            <i class="fa-solid fa-boxes-stacked"></i>
+            Productos
+          </button>
+          <button class="tab-btn" data-tab="compradores">
+            <i class="fa-solid fa-users"></i>
+            Compradores
+          </button>
+        </div>
+
+        <!-- Tab: Productos -->
+        <div class="tab-content active" id="tab-productos">
+          <div class="modal-form-section">
+            <h3 id="formTitulo">Registrar producto nuevo</h3>
+
+            <form class="producto-form" id="productoForm">
+              <input type="hidden" id="productoId" />
+              <input type="text" id="productoCodigo" placeholder="Codigo automatico" readonly />
+              <input type="text" id="productoNombre" placeholder="Nombre del producto" />
+              <input type="text" id="productoCategoria" placeholder="Categoria" />
+              <input type="number" id="productoStock" placeholder="Stock disponible" min="0" />
+              <input type="number" id="productoCosto" placeholder="Precio de costo" min="0" step="0.01" />
+              <input type="number" id="productoVenta" placeholder="Precio de venta" min="0" step="0.01" />
+              <textarea id="productoDescripcion" placeholder="Descripcion"></textarea>
+
+              <div class="form-actions">
+                <button type="submit" id="guardarProducto">
+                  <i class="fa-solid fa-floppy-disk"></i>
+                  Guardar
+                </button>
+                <button type="button" id="cancelarEdicion">
+                  <i class="fa-solid fa-xmark"></i>
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div class="modal-lista-section">
+            <h3>Lista de productos</h3>
+            <div class="admin-lista" id="adminLista"></div>
+          </div>
+        </div>
+
+        <!-- Tab: Compradores -->
+        <div class="tab-content" id="tab-compradores">
+          <div class="compradores-header">
+            <h3>Registro de compradores</h3>
+            <button type="button" id="limpiarCompradores" class="btn-limpiar">
+              <i class="fa-solid fa-trash"></i>
+              Limpiar registro
+            </button>
+          </div>
+          <div class="compradores-lista" id="compradoresLista"></div>
+        </div>
+
+      </div><!-- fin modal-admin-panel -->
+    </div><!-- fin modal-container -->
+  </div><!-- fin modal-overlay -->
+
+  <aside class="carrito-panel" id="carritoPanel">
+    <div class="carrito-header">
+      <h2>Carrito</h2>
+      <button id="cerrarCarrito">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div id="listaCarrito"></div>
+    <div class="carrito-footer">
+      <h3>Total: $<span id="totalCarrito">0</span></h3>
+      <button id="comprarBtn">Finalizar compra</button>
+    </div>
+  </aside>
+
+  <footer id="contacto">
+    <div>
+      <h2>Limpia<span>Max</span></h2>
+      <p>Sistema de gestion de inventario para productos de limpieza.</p>
+    </div>
+    <div class="footer-contacto">
+      <p><i class="fa-solid fa-phone"></i> 811664708</p>
+      <p><i class="fa-solid fa-location-dot"></i> Tu ciudad, Monterrey</p>
+      <p><i class="fa-solid fa-envelope"></i> gabrielmartin180608@gmail.com</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
