@@ -1,7 +1,14 @@
 // ─── Constantes ──────────────────────────────────────────────────────────────
-const ADMIN_PASSWORD = "gabrielmm";
-const STORAGE_KEY    = "limpiamax_inventario";
-const BUYERS_KEY     = "limpiamax_compradores";
+const ADMIN_HASH  = "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9";
+const STORAGE_KEY = "limpiamax_inventario";
+const BUYERS_KEY  = "limpiamax_compradores";
+
+async function sha256(texto) {
+  const data = new TextEncoder().encode(texto);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+}
 
 const PRODUCTOS_INICIALES = [
   {
@@ -76,13 +83,13 @@ const dom = {
   abrirModalAdmin2: $("abrirModalAdmin2"),
 
   // Admin auth
-  adminLogin:    $("adminLogin"),
-  adminPanel:    $("adminPanel"),
-  adminPassword: $("adminPassword"),
-  loginAdmin:    $("loginAdmin"),
-  loginMensaje:  $("loginMensaje"),
-  cerrarAdmin:   $("cerrarAdmin"),
-  togglePassword:$("togglePassword"),
+  adminLogin:     $("adminLogin"),
+  adminPanel:     $("adminPanel"),
+  adminPassword:  $("adminPassword"),
+  loginAdmin:     $("loginAdmin"),
+  loginMensaje:   $("loginMensaje"),
+  cerrarAdmin:    $("cerrarAdmin"),
+  togglePassword: $("togglePassword"),
 
   // Admin form
   productoForm:        $("productoForm"),
@@ -151,11 +158,10 @@ function debounce(fn, ms = 200) {
   };
 }
 
-// ─── Modal admin ─────────────────────────────────────────────────────────────
+// ─── Modal admin ──────────────────────────────────────────────────────────────
 function abrirModal() {
   dom.modalAdmin.classList.add("active");
   document.body.style.overflow = "hidden";
-  // Si no hay sesión activa, mostrar login; si ya está activo, mostrar panel
   if (adminActivo) {
     dom.adminLogin.classList.add("hidden");
     dom.adminPanel.classList.add("active");
@@ -414,7 +420,6 @@ function cargarProductoEnFormulario(id) {
   dom.productoDescripcion.value = producto.descripcion;
   dom.formTitulo.textContent    = "Modificar producto existente";
 
-  // Asegurarse de estar en la tab de productos y hacer scroll al form
   const tabProductos = document.querySelector('[data-tab="productos"]');
   if (tabProductos && !tabProductos.classList.contains("active")) {
     tabProductos.click();
@@ -451,24 +456,19 @@ function eliminarProducto(id) {
 
 // ─── Eventos ──────────────────────────────────────────────────────────────────
 
-// Abrir modal desde navbar y desde hero
 dom.abrirModalAdmin.addEventListener("click",  abrirModal);
 dom.abrirModalAdmin2.addEventListener("click", abrirModal);
 
-// Cerrar modal con botón X
 dom.cerrarModal.addEventListener("click", cerrarModal);
 
-// Cerrar modal al hacer clic en el overlay (fuera del contenedor)
 dom.modalAdmin.addEventListener("click", (e) => {
   if (e.target === dom.modalAdmin) cerrarModal();
 });
 
-// Cerrar modal con Escape
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && dom.modalAdmin.classList.contains("active")) cerrarModal();
 });
 
-// Mostrar/ocultar contraseña
 dom.togglePassword.addEventListener("click", () => {
   const input = dom.adminPassword;
   const icon  = dom.togglePassword.querySelector("i");
@@ -481,7 +481,6 @@ dom.togglePassword.addEventListener("click", () => {
   }
 });
 
-// Búsqueda con debounce
 dom.busquedaProducto.addEventListener("input", debounce(renderProductos));
 
 dom.limpiarBusqueda.addEventListener("click", () => {
@@ -490,14 +489,12 @@ dom.limpiarBusqueda.addEventListener("click", () => {
   dom.busquedaProducto.focus();
 });
 
-// Delegación en contenedor de productos
 dom.productosContenedor.addEventListener("click", (e) => {
   const boton = e.target.closest(".agregar");
   if (!boton) return;
   agregarAlCarrito(boton.dataset.id);
 });
 
-// Carrito: abrir / cerrar
 dom.abrirCarrito.addEventListener("click",  () => dom.carritoPanel.classList.add("active"));
 dom.cerrarCarrito.addEventListener("click", () => dom.carritoPanel.classList.remove("active"));
 
@@ -511,7 +508,6 @@ document.addEventListener("click", (e) => {
   }
 });
 
-// Eliminar item del carrito
 dom.listaCarrito.addEventListener("click", (e) => {
   const boton = e.target.closest("button[data-index]");
   if (!boton) return;
@@ -521,7 +517,6 @@ dom.listaCarrito.addEventListener("click", (e) => {
   actualizarCarrito();
 });
 
-// Ir al pedido final
 dom.comprarBtn.addEventListener("click", () => {
   if (carrito.length === 0) {
     alert("Agrega productos al carrito antes de finalizar la compra.");
@@ -533,7 +528,6 @@ dom.comprarBtn.addEventListener("click", () => {
   dom.pedidoFinal.scrollIntoView({ behavior: "smooth" });
 });
 
-// Confirmar pedido
 dom.confirmarPedido.addEventListener("click", () => {
   const nombre    = dom.clienteCompra.value.trim();
   const telefono  = dom.telefonoCompra.value.trim();
@@ -585,12 +579,14 @@ dom.confirmarPedido.addEventListener("click", () => {
   dom.direccionCompra.value    = "";
 });
 
-// Admin: login
-dom.loginAdmin.addEventListener("click", () => {
-  if (dom.adminPassword.value !== ADMIN_PASSWORD) {
+// ─── Admin: login ─────────────────────────────────────────────────────────────
+dom.loginAdmin.addEventListener("click", async () => {
+  const passwordIngresada = dom.adminPassword.value;
+  const hashIngresado     = await sha256(passwordIngresada);
+
+  if (hashIngresado !== ADMIN_HASH) {
     dom.loginMensaje.textContent = "Contrasena incorrecta.";
     dom.adminPassword.focus();
-    // Efecto shake en el input
     dom.adminPassword.closest(".input-group").style.animation = "none";
     requestAnimationFrame(() => {
       dom.adminPassword.closest(".input-group").style.animation = "shake 0.35s ease";
@@ -608,26 +604,24 @@ dom.loginAdmin.addEventListener("click", () => {
   renderAdminLista();
 });
 
-// Enter en campo de contraseña
 dom.adminPassword.addEventListener("keydown", (e) => {
   if (e.key === "Enter") dom.loginAdmin.click();
 });
 
-// Admin: cerrar sesión
+// ─── Admin: cerrar sesión ─────────────────────────────────────────────────────
 dom.cerrarAdmin.addEventListener("click", () => {
   adminActivo = false;
   dom.adminPanel.classList.remove("active");
   dom.adminLogin.classList.remove("hidden");
   dom.loginMensaje.textContent = "";
   limpiarFormularioProducto();
-  // Resetear tabs a "productos"
   document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
   document.querySelectorAll(".tab-content").forEach((c) => c.classList.remove("active"));
   document.querySelector('[data-tab="productos"]').classList.add("active");
   document.getElementById("tab-productos").classList.add("active");
 });
 
-// Admin: guardar producto
+// ─── Admin: guardar producto ──────────────────────────────────────────────────
 dom.productoForm.addEventListener("submit", (e) => {
   e.preventDefault();
   if (!adminActivo) return;
@@ -639,12 +633,12 @@ dom.productoForm.addEventListener("submit", (e) => {
   const venta       = Number(dom.productoVenta.value);
   const descripcion = dom.productoDescripcion.value.trim();
 
-  if (!nombre)                        return alert("El nombre es obligatorio.");
-  if (!categoria)                     return alert("La categoria es obligatoria.");
-  if (!descripcion)                   return alert("La descripcion es obligatoria.");
-  if (isNaN(stock)  || stock  < 0)    return alert("El stock debe ser un numero mayor o igual a 0.");
-  if (isNaN(costo)  || costo  < 0)    return alert("El costo debe ser un numero mayor o igual a 0.");
-  if (isNaN(venta)  || venta  <= 0)   return alert("El precio de venta debe ser mayor a 0.");
+  if (!nombre)                      return alert("El nombre es obligatorio.");
+  if (!categoria)                   return alert("La categoria es obligatoria.");
+  if (!descripcion)                 return alert("La descripcion es obligatoria.");
+  if (isNaN(stock)  || stock  < 0)  return alert("El stock debe ser un numero mayor o igual a 0.");
+  if (isNaN(costo)  || costo  < 0)  return alert("El costo debe ser un numero mayor o igual a 0.");
+  if (isNaN(venta)  || venta  <= 0) return alert("El precio de venta debe ser mayor a 0.");
 
   if (dom.productoId.value) {
     productos = productos.map((p) =>
@@ -673,7 +667,7 @@ dom.productoForm.addEventListener("submit", (e) => {
 
 dom.cancelarEdicion.addEventListener("click", limpiarFormularioProducto);
 
-// Admin: limpiar compradores
+// ─── Admin: limpiar compradores ───────────────────────────────────────────────
 dom.limpiarCompradores.addEventListener("click", () => {
   if (!adminActivo) return;
   if (!confirm("Eliminar todo el registro de compradores?")) return;
@@ -682,7 +676,7 @@ dom.limpiarCompradores.addEventListener("click", () => {
   renderCompradores();
 });
 
-// Admin: editar / eliminar (delegación)
+// ─── Admin: editar / eliminar (delegación) ────────────────────────────────────
 dom.adminLista.addEventListener("click", (e) => {
   const editar   = e.target.closest("[data-edit]");
   const eliminar = e.target.closest("[data-delete]");
@@ -690,7 +684,7 @@ dom.adminLista.addEventListener("click", (e) => {
   if (eliminar) eliminarProducto(eliminar.dataset.delete);
 });
 
-// ─── Animación shake para contraseña incorrecta ───────────────────────────────
+// ─── Animación shake ──────────────────────────────────────────────────────────
 const shakeStyle = document.createElement("style");
 shakeStyle.textContent = `
   @keyframes shake {
