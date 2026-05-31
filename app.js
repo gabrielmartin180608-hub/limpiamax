@@ -1,5 +1,5 @@
 // ─── Constantes ──────────────────────────────────────────────────────────────
-const ADMIN_PASSWORD = "admin123";
+const ADMIN_PASSWORD = "gabrielmm";
 const STORAGE_KEY    = "limpiamax_inventario";
 const BUYERS_KEY     = "limpiamax_compradores";
 
